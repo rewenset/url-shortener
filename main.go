@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -40,7 +41,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		}
 		last++
 		urls[last] = r.PostFormValue("original")
-		data = strconv.Itoa(last)
+		data = fmt.Sprintf("http://%s/f/%d", r.Host, last)
 	}
 
 	if err := t.Execute(w, data); err != nil {
