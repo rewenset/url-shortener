@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -41,7 +40,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		}
 		last++
 		urls[last] = r.PostFormValue("original")
-		data = fmt.Sprint(last)
+		data = strconv.Itoa(last)
 	}
 
 	if err := t.Execute(w, data); err != nil {
@@ -56,7 +55,7 @@ func follow(w http.ResponseWriter, r *http.Request) {
 	urlID, err := strconv.Atoi(vars["urlID"])
 	if err != nil {
 		log.Printf("could not parse urlID to int: %v", err)
-		fmt.Fprint(w, "some error")
+		http.Error(w, "bad url", http.StatusBadRequest)
 		return
 	}
 
