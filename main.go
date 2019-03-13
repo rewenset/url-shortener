@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var indexTmpl = template.Must(template.ParseFiles("index.html"))
+
 func main() {
 	r := mux.NewRouter().StrictSlash(true)
 
@@ -27,8 +29,6 @@ func logger(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.ParseFiles("index.html"))
-
 	var data string
 	if r.Method == "POST" {
 		err := r.ParseForm()
@@ -40,7 +40,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := t.Execute(w, data); err != nil {
+	if err := indexTmpl.Execute(w, data); err != nil {
 		log.Printf("could not execute template: %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 	}
@@ -49,9 +49,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func follow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	if original := load(vars["urlID"]); original != "" {
-		log.Printf("redirecting to %s", original)
-		http.Redirect(w, r, original, http.StatusFound)
+	if url := load(vars["urlID"]); url != "" {
+		log.Printf("redirecting to %s", url)
+		http.Redirect(w, r, url, http.StatusFound)
 	} else {
 		log.Printf("requested urlID - %s - not found", vars["urlID"])
 		http.NotFound(w, r)
