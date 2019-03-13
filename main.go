@@ -10,7 +10,7 @@ import (
 )
 
 var indexTmpl = template.Must(template.ParseFiles("index.html"))
-var cache = NewSafeCache()
+var cache = NewSafeCache(10)
 
 func main() {
 	r := mux.NewRouter().StrictSlash(true)
