@@ -29,12 +29,8 @@ func TestFollowHandler(t *testing.T) {
 		urlID  string
 		status int
 	}{
-		{name: "good url", urlID: "1", status: http.StatusFound},
-		{name: "unknown url id", urlID: "10", status: http.StatusNotFound},
-		{name: "not integer url id", urlID: "a", status: http.StatusBadRequest},
+		{name: "unknown url id", urlID: "0", status: http.StatusNotFound},
 	}
-
-	urls[1] = "test/case"
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {

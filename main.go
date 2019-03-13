@@ -4,14 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"text/template"
 
 	"github.com/gorilla/mux"
 )
-
-var last int
-var urls = make(map[int]string)
 
 func main() {
 	r := mux.NewRouter().StrictSlash(true)
@@ -38,33 +34,26 @@ func index(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("could not parse form: %v", err)
+		} else {
+			urlID := save(r.PostFormValue("original"))
+			data = fmt.Sprintf("http://%s/f/%s", r.Host, urlID)
 		}
-		last++
-		urls[last] = r.PostFormValue("original")
-		data = fmt.Sprintf("http://%s/f/%d", r.Host, last)
 	}
 
 	if err := t.Execute(w, data); err != nil {
 		log.Printf("could not execute template: %v", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
 	}
 
 }
 
 func follow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
-	urlID, err := strconv.Atoi(vars["urlID"])
-	if err != nil {
-		log.Printf("could not parse urlID to int: %v", err)
-		http.Error(w, "bad url", http.StatusBadRequest)
-		return
-	}
-
-	if e, ok := urls[urlID]; ok {
-		log.Printf("redirecting to %s", e)
-		http.Redirect(w, r, e, http.StatusFound)
+	if original := load(vars["urlID"]); original != "" {
+		log.Printf("redirecting to %s", original)
+		http.Redirect(w, r, original, http.StatusFound)
 	} else {
-		log.Printf("requested urlID - %d - not found", urlID)
+		log.Printf("requested urlID - %s - not found", vars["urlID"])
 		http.NotFound(w, r)
 	}
 }
