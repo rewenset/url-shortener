@@ -10,6 +10,7 @@ import (
 )
 
 var indexTmpl = template.Must(template.ParseFiles("index.html"))
+var cache = NewSafeCache()
 
 func main() {
 	r := mux.NewRouter().StrictSlash(true)
@@ -49,11 +50,18 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func follow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	if url := load(vars["urlID"]); url != "" {
-		log.Printf("redirecting to %s", url)
-		http.Redirect(w, r, url, http.StatusFound)
-	} else {
-		log.Printf("requested urlID - %s - not found", vars["urlID"])
-		http.NotFound(w, r)
+	url := cache.Get(vars["urlID"])
+
+	if url == "" {
+		url = load(vars["urlID"])
+		if url == "" {
+			log.Printf("requested urlID - %s - not found", vars["urlID"])
+			http.NotFound(w, r)
+			return
+		}
+		cache.Add(vars["urlID"], url)
 	}
+
+	log.Printf("redirecting to %s", url)
+	http.Redirect(w, r, url, http.StatusFound)
 }

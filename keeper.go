@@ -55,6 +55,7 @@ func save(url string) string {
 }
 
 func load(urlID string) string {
+	log.Println("loading url from csv")
 	f, err := os.Open(csvFileName)
 	if err != nil {
 		panic(err)
